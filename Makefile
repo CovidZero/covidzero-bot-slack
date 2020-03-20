@@ -17,7 +17,8 @@ package:
 	docker build . -t covidzero/slackbot:latest
 
 run: package
-	docker run --env-file .env covidzero/slackbot:latest
+	#docker run --env-file .env covidzero/slackbot:latest
+	docker-compose up
 
 devsetup:
 	mv go.mod go.mod
