@@ -28,5 +28,5 @@ func main() {
 		log.Fatal().Msg("Your environment is not properly configured. Please check the log for more information")
 	}
 
-	bot.Export()
+	bot.ExportCSV()
 }
