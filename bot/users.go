@@ -38,7 +38,7 @@ func Export() bool {
 
 	q := req.URL.Query()
 	q.Add("token", os.Getenv("SLACK_TOKEN"))
-	q.Add("limit", "100")
+	q.Add("limit", "1000")
 
 	req.URL.RawQuery = q.Encode()
 
