@@ -2,7 +2,7 @@ version: '3.1'
 
 services:
   covid0-bot:
-    image: covid0-slackbot
+    image: covidzero/slackbot:latest
     build: .
     environment:
       SLACK_TOKEN:
