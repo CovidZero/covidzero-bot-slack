@@ -17,6 +17,9 @@
 # Dev environments
 .env*
 
+# Go bindata
+bindata.go
+
 # Bot outputs
 output/*
 

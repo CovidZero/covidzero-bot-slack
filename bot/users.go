@@ -4,14 +4,13 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/rs/zerolog/log"
 	"html/template"
 	"net/http"
 	"os"
-
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 type (
@@ -131,7 +130,13 @@ func ExportHTML() bool {
 	}
 	defer file.Close()
 
-	t, err := template.New("users_export_template.html").ParseFiles("./resources/users_export_template.html")
+	data, err := Asset("data/users_export_template.html")
+	if err != nil {
+		log.Error().Err(err).Str("module", "bot").Msg("Error openning template files")
+		return false
+	}
+
+	t, err := template.New("users_export_template.html").Parse(string(data))
 	if err != nil {
 		log.Error().Err(err).Str("module", "bot").Msg("Error parsing template files")
 		return false

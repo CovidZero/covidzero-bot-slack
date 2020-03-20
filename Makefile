@@ -14,10 +14,10 @@ watch: build
 	modd
 
 package:
+	go-bindata -o bot/templates.go -pkg bot data/
 	docker build . -t covidzero/slackbot:latest
 
 run: package
-	#docker run --env-file .env covidzero/slackbot:latest
 	docker-compose up
 
 devsetup:
