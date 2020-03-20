@@ -4,7 +4,8 @@ Repositório criado para interagir com o Slack através de APIs
 
 ## users.Export()
 
-Exporta a base de usuários do slack para /tmp/covid0-slackbot/output/results.csv
+Exporta a base de usuários do slack para `/tmp/covid0-slackbot/output/results.csv`
+
 Vamos usar essa base para comunicação com os membros.
 
 ## Compilando
