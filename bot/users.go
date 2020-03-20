@@ -8,9 +8,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/rs/zerolog/log"
+	"github.com/thoas/go-funk"
 	"html/template"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type (
@@ -142,7 +144,10 @@ func ExportHTML() bool {
 		return false
 	}
 
-	err = t.Execute(file, response.Members)
+	err = t.Execute(file, funk.Filter(response.Members, func(x User) bool {
+		return !strings.Contains(x.Profile.Image192, "secure.gravatar.com") &&
+			!strings.Contains(x.Profile.RealName, "bot")
+	}))
 	if err != nil {
 		log.Error().Err(err).Str("module", "bot").Msg("Error executing template")
 	}
@@ -168,7 +173,7 @@ func ExportHTML() bool {
 		Bucket:      aws.String(os.Getenv("AWS_S3_BUCKET")),
 		Key:         aws.String("contribuidores.html"),
 		Body:        file2,
-		ContentType: aws.String("text/html"),
+		ContentType: aws.String("text/html; charset=utf-8"),
 	})
 	if err != nil {
 		log.Error().Err(err).Str("module", "bot").Msg("Error while uploading file to S3")
