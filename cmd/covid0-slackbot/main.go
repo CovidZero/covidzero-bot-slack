@@ -15,6 +15,22 @@ func SaneEnv() []error {
 		errList = append(errList, errors.New("missing SLACK_TOKEN enviroment"))
 	}
 
+	if os.Getenv("AWS_ACCESS_KEY_ID") == "" {
+		errList = append(errList, errors.New("missing AWS_KEY enviroment"))
+	}
+
+	if os.Getenv("AWS_SECRET_ACCESS_KEY") == "" {
+		errList = append(errList, errors.New("missing AWS_SECRET enviroment"))
+	}
+
+	if os.Getenv("AWS_S3_REGION") == "" {
+		errList = append(errList, errors.New("missing AWS_S3_REGION enviroment"))
+	}
+
+	if os.Getenv("AWS_S3_BUCKET") == "" {
+		errList = append(errList, errors.New("missing AWS_S3_BUCKET enviroment"))
+	}
+
 	return errList
 }
 
@@ -29,4 +45,5 @@ func main() {
 	}
 
 	bot.ExportCSV()
+	bot.ExportHTML()
 }

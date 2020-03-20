@@ -1,0 +1,70 @@
+<html lang="pt-br">
+<head>
+    <title>CovidZero - Contribuidores</title>
+    <style type="text/css">
+
+        body {
+            font-family: -apple-system, calibri, sans-serif;
+        }
+
+        .c-row {
+            display: flex;
+            flex-flow: row wrap;
+        }
+
+        .c-column {
+            flex: 1 1 50%;
+        }
+
+        @media only screen and (min-width: 768px) {
+            .c-column {
+                flex: 1 1 25%;
+            }
+        }
+
+        @media only screen and (min-width: 1280px) {
+            .c-column {
+                flex: 1 1 20%;
+            }
+        }
+
+        @media only screen and (min-width: 1500px) {
+            .c-column {
+                flex: 1 1 14.28%;
+            }
+        }
+
+        .c-content {
+            margin: 10%;
+            text-align: center;
+        }
+
+        .c-content img {
+            border-radius: 1000px;
+            border: 1px solid #efefef;
+            width: 80%;
+        }
+
+        .c-content p {
+            color: #333;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="c-row">
+    {{range .}}
+        <div class="c-column">
+            <div class="c-content">
+                <img src="{{.Profile.Image192}}"
+                     title="{{.Profile.RealName}}"
+                     alt="{{.Profile.RealName}}">
+
+                <p>{{.Profile.RealName}}</p>
+            </div>
+        </div>
+    {{end}}
+</div>
+</body>
+</html>

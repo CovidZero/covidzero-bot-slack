@@ -4,15 +4,21 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/rs/zerolog/log"
+	"html/template"
 	"net/http"
 	"os"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
 )
 
 type (
 	Profile struct {
 		RealName   string `json:"real_name"`
 		StatusText string `json:"status_text"`
+		Image192   string `json:"image_192"`
 		Image512   string `json:"image_512"`
 		Email      string `json:"email"`
 	}
@@ -100,6 +106,68 @@ func ExportCSV() bool {
 	}
 
 	log.Info().Str("module", "bot").Msg(fmt.Sprintf("Output: %s", output))
+
+	return true
+}
+
+func ExportHTML() bool {
+	var response = Export()
+	if response == nil {
+		return false
+	}
+
+	var outputPath = "/tmp/covid0-slackbot/output"
+	err := os.MkdirAll(outputPath, os.ModePerm)
+	if err != nil {
+		log.Error().Err(err).Str("module", "bot").Msg("Error creating output directory")
+		return false
+	}
+
+	var output = fmt.Sprintf("%s/result.html", outputPath)
+	file, err := os.Create(output)
+	if err != nil {
+		log.Error().Err(err).Str("module", "bot").Msg(fmt.Sprintf("Error creating file: %s", output))
+		return false
+	}
+	defer file.Close()
+
+	t, err := template.New("users_export_template.html").ParseFiles("./resources/users_export_template.html")
+	if err != nil {
+		log.Error().Err(err).Str("module", "bot").Msg("Error parsing template files")
+		return false
+	}
+
+	err = t.Execute(file, response.Members)
+	if err != nil {
+		log.Error().Err(err).Str("module", "bot").Msg("Error executing template")
+	}
+
+	log.Info().Str("module", "bot").Msg(fmt.Sprintf("Output: %s", output))
+
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String(os.Getenv("AWS_S3_REGION")),
+	}))
+
+	uploader := s3manager.NewUploader(sess, func(u *s3manager.Uploader) {
+		// Define a strategy that will buffer 25 MiB in memory
+		u.BufferProvider = s3manager.NewBufferedReadSeekerWriteToPool(25 * 1024 * 1024)
+	})
+
+	file2, err := os.Open(output)
+	if err != nil {
+		log.Error().Err(err).Str("module", "bot").Msg("Error opening template file")
+	}
+	defer file2.Close()
+
+	_, err = uploader.Upload(&s3manager.UploadInput{
+		Bucket:      aws.String(os.Getenv("AWS_S3_BUCKET")),
+		Key:         aws.String("contribuidores.html"),
+		Body:        file2,
+		ContentType: aws.String("text/html"),
+	})
+	if err != nil {
+		log.Error().Err(err).Str("module", "bot").Msg("Error while uploading file to S3")
+	}
 
 	return true
 }
