@@ -35,6 +35,21 @@ type (
 	}
 )
 
+var namesToFilter = []string{
+	"Slackbot",
+	"Google Drive",
+	"trello",
+	"Zoom",
+	"Doodle Bot",
+	"Bot",
+	"Miro",
+	"Simple Poll",
+	"Microsoft OneDrive",
+	"Outlook Calendar",
+	"Google Calendar",
+	"standuply",
+}
+
 func Export() *ExportResponse {
 	req, err := http.NewRequest("GET", "https://slack.com/api/users.list", nil)
 	if err != nil {
@@ -144,10 +159,21 @@ func ExportHTML() bool {
 		return false
 	}
 
-	err = t.Execute(file, funk.Filter(response.Members, func(x User) bool {
-		return !strings.Contains(x.Profile.Image192, "secure.gravatar.com") &&
-			!strings.Contains(x.Profile.RealName, "bot")
-	}))
+	var filteredMembers = funk.Filter(response.Members, func(x User) bool {
+		if strings.Contains(x.Profile.Image192, "secure.gravatar.com") {
+			return false
+		}
+
+		for _, nametoFilter := range namesToFilter {
+			if strings.Contains(x.Profile.RealName, nametoFilter) {
+				return false
+			}
+		}
+
+		return true
+	})
+
+	err = t.Execute(file, filteredMembers)
 	if err != nil {
 		log.Error().Err(err).Str("module", "bot").Msg("Error executing template")
 	}
