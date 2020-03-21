@@ -12,6 +12,7 @@ import (
 	"html/template"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -34,6 +35,20 @@ type (
 		Members []User `json:"members"`
 	}
 )
+
+type ByName []User
+
+func (slice ByName) Len() int {
+	return len(slice)
+}
+
+func (slice ByName) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
+}
+
+func (slice ByName) Less(i, j int) bool  {
+	return slice[i].Profile.RealName < slice[j].Profile.RealName;
+}
 
 var namesToFilter = []string{
 	"Slackbot",
@@ -172,6 +187,8 @@ func ExportHTML() bool {
 
 		return true
 	})
+
+	sort.Sort(ByName(filteredMembers.([]User)))
 
 	err = t.Execute(file, filteredMembers)
 	if err != nil {

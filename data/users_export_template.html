@@ -51,9 +51,21 @@
             font-size: 1rem;
             font-weight: bold;
         }
+
+        .c-lead {
+            color: #333;
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
+<div class="c-row">
+    <div class="c-column">
+        <p class="c-lead">{{len .}} contribuidores cadastrados</p>
+    </div>
+</div>
 <div class="c-row">
     {{range .}}
         <div class="c-column">
