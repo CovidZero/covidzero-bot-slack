@@ -52,6 +52,11 @@
             font-weight: bold;
         }
 
+        .c-content a {
+            color: #333;
+            text-decoration: none;
+        }
+
         .c-lead {
             color: #333;
             font-size: 2rem;
@@ -74,7 +79,11 @@
                      title="{{.Profile.RealName}}"
                      alt="{{.Profile.RealName}}">
 
-                <p>{{.Profile.RealName}}</p>
+                <p>
+                    <a href="{{.GetLinkedInLink}}" target="_blank">
+                        {{.Profile.RealName}}
+                    </a>
+                </p>
             </div>
         </div>
     {{end}}

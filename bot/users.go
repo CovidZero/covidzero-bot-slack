@@ -36,6 +36,14 @@ type (
 	}
 )
 
+func (u User) GetLinkedInLink() string {
+	if strings.Contains(u.Profile.StatusText, "https://www.linkedin.com") {
+		return u.Profile.StatusText
+	}
+
+	return "#"
+}
+
 type ByName []User
 
 func (slice ByName) Len() int {
