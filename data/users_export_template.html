@@ -14,24 +14,24 @@
         }
 
         .c-column {
-            flex: 1 1 50%;
+            flex: 0 0 50%;
         }
 
         @media only screen and (min-width: 768px) {
             .c-column {
-                flex: 1 1 25%;
+                flex: 0 0 25%;
             }
         }
 
         @media only screen and (min-width: 1280px) {
             .c-column {
-                flex: 1 1 20%;
+                flex: 0 0 20%;
             }
         }
 
         @media only screen and (min-width: 1500px) {
             .c-column {
-                flex: 1 1 14.28%;
+                flex: 0 0 14.28%;
             }
         }
 
@@ -56,15 +56,15 @@
             color: #333;
             font-size: 2rem;
             font-weight: bold;
+            flex: 1 1 100%;
             text-align: center;
+            margin-top: 5rem;
         }
     </style>
 </head>
 <body>
 <div class="c-row">
-    <div class="c-column">
-        <p class="c-lead">{{len .}} contribuidores cadastrados</p>
-    </div>
+    <p class="c-lead">{{len .}} contribuidores cadastrados</p>
 </div>
 <div class="c-row">
     {{range .}}
