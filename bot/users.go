@@ -19,12 +19,13 @@ import (
 
 type (
 	Profile struct {
-		RealName   string `json:"real_name"`
-		StatusText string `json:"status_text"`
-		AvatarHash string `json:"avatar_hash"`
-		Image192   string `json:"image_192"`
-		Image512   string `json:"image_512"`
-		Email      string `json:"email"`
+		RealName      string `json:"real_name"`
+		StatusText    string `json:"status_text"`
+		AvatarHash    string `json:"avatar_hash"`
+		ImageOriginal string `json:"image_original"`
+		Image192      string `json:"image_192"`
+		Image512      string `json:"image_512"`
+		Email         string `json:"email"`
 	}
 
 	User struct {
@@ -125,6 +126,7 @@ func ExportCSV() bool {
 		r = append(r, member.Profile.StatusText)
 		r = append(r, member.Profile.AvatarHash)
 		r = append(r, member.Profile.Email)
+		r = append(r, member.Profile.ImageOriginal)
 		r = append(r, member.Profile.Image512)
 		r = append(r, member.Profile.Image192)
 
@@ -180,7 +182,7 @@ func ExportHTML() bool {
 
 	// Filter members with photos and non-bots
 	var filteredMembers = funk.Filter(response.Members, func(x User) bool {
-		if strings.Contains(x.Profile.Image192, "secure.gravatar.com") {
+		if len(x.Profile.ImageOriginal) == 0 {
 			return false
 		}
 
