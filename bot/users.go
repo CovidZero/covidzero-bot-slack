@@ -34,9 +34,14 @@ type (
 		IsBot   bool    `json:"is_bot"`
 	}
 
+	Metadata struct {
+		NextCursor string `json:"next_cursor"`
+	}
+
 	ExportResponse struct {
 		Ok      bool   `json:"ok"`
 		Members []User `json:"members"`
+		Metadata Metadata `json:"response_metadata"`
 	}
 )
 
@@ -62,36 +67,58 @@ func (slice ByName) Less(i, j int) bool {
 	return slice[i].Profile.RealName < slice[j].Profile.RealName
 }
 
-func Export() *ExportResponse {
-	req, err := http.NewRequest("GET", "https://slack.com/api/users.list", nil)
-	if err != nil {
-		log.Error().Err(err).Str("module", "bot").Msg("Error creating request")
-		return nil
+func Export() []User {
+
+	var hasNext = true
+	var nextCursor = ""
+	var users = []User{}
+
+	for hasNext {
+		req, err := http.NewRequest("GET", "https://slack.com/api/users.list", nil)
+		if err != nil {
+			log.Error().Err(err).Str("module", "bot").Msg("Error creating request")
+			return nil
+		}
+
+		q := req.URL.Query()
+		q.Add("token", os.Getenv("SLACK_TOKEN"))
+		q.Add("limit", "1000")
+
+		if len(nextCursor) != 0 {
+			q.Add("cursor", nextCursor)
+		}
+
+		req.URL.RawQuery = q.Encode()
+
+		client := &http.Client{}
+
+		res, err := client.Do(req)
+		if err != nil {
+			log.Error().Err(err).Str("module", "bot").Msg(fmt.Sprintf("Error on request: %s", err))
+			return nil
+		}
+
+		var response = ExportResponse{}
+		dec := json.NewDecoder(res.Body)
+		err = dec.Decode(&response)
+		if err != nil {
+			log.Error().Err(err).Str("module", "bot").Msg("Error decoding JSON")
+			return nil
+		}
+
+		for _, x := range response.Members {
+			// TODO: Possible performance burdening
+			users = append(users, x)
+		}
+
+		if len(response.Metadata.NextCursor) != 0 {
+			nextCursor = response.Metadata.NextCursor
+		} else {
+			hasNext = false
+		}
 	}
 
-	q := req.URL.Query()
-	q.Add("token", os.Getenv("SLACK_TOKEN"))
-	q.Add("limit", "1000")
-
-	req.URL.RawQuery = q.Encode()
-
-	client := &http.Client{}
-
-	res, err := client.Do(req)
-	if err != nil {
-		log.Error().Err(err).Str("module", "bot").Msg(fmt.Sprintf("Error on request: %s", err))
-		return nil
-	}
-
-	var response = ExportResponse{}
-	dec := json.NewDecoder(res.Body)
-	err = dec.Decode(&response)
-	if err != nil {
-		log.Error().Err(err).Str("module", "bot").Msg("Error decoding JSON")
-		return nil
-	}
-
-	return &response
+	return users
 }
 
 func ExportCSV() bool {
@@ -119,7 +146,7 @@ func ExportCSV() bool {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	for _, member := range response.Members {
+	for _, member := range response {
 		var r []string
 		r = append(r, strconv.FormatBool(member.IsBot))
 		r = append(r, member.Profile.RealName)
@@ -181,7 +208,7 @@ func ExportHTML() bool {
 	}
 
 	// Filter members with photos and non-bots
-	var filteredMembers = funk.Filter(response.Members, func(x User) bool {
+	var filteredMembers = funk.Filter(response, func(x User) bool {
 		if len(x.Profile.ImageOriginal) == 0 {
 			return false
 		}
@@ -204,7 +231,7 @@ func ExportHTML() bool {
 
 	log.Info().Str("module", "bot").Msg(fmt.Sprintf("Output: %s", output))
 
-	// Connect to amazon aws services
+	//Connect to amazon aws services
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(os.Getenv("AWS_S3_REGION")),
 	}))
